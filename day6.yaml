@@ -1,0 +1,61 @@
+# Day 06 - Introduction to cloudformation and Kubernetes
+## Ansible - install docker
+
+'''yaml
+- name: Install Docker
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+      - name: start Docker service
+        service:
+          name: docker
+          state: started
+          enabled: yes
+
+## Terraform - Provisioning EC2 with VPC
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  }
+
+resource "aws_instance" "pathnex_ec2" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.main.id
+  security_groups = [aws_security_group.main.name]
+  tags = {
+    Name = "PathnexEC2"
+  }
+}
+
+## kubernetes - Pod with volume Mount
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ankit-pod
+spec:
+  containers:
+  - name: ankit-container
+    image: nginx
+    volumeMounts:
+    - name: ankit-volume
+      mountPath: /usr/share/nginx/html
+  volumes:
+  - name: ankit-volume
+    hostPath:
+      path: /data
+      type: Directory
+
+  ##shell script - check for running services
+#!/bin/bash
+services=("nginx" "docker" "httpd")
+for service in "${services[@]}"; do
+  if systemctl is-active --quiet $service; then
+    echo "$service is running"
+  else
+    echo "$service is not running"
+  fi
+done
