@@ -27,7 +27,7 @@ pipeline {
         }
     }
           
- 🔹 GitLab CI/CD — With Docker Build
+ ## GitLab CI/CD — With Docker Build
 
 stages:
   - build
@@ -48,7 +48,9 @@ deploy:
   stage: deploy
   script:
     - kubectl apply -f kubernetes/deployment.yaml
-🔹 Ansible — Create User and Set Permissions
+
+## Ansible — Create User and Set Permissions
+
 - name: Create a new user
   hosts: all
   become: yes
@@ -65,7 +67,8 @@ deploy:
         group: ankit
         mode: '0755'
         
-🔹 Terraform — EC2 with Tags and Volume
+## Terraform — EC2 with Tags and Volume
+
 resource "aws_instance" "ankitEC2" {
   ami           = "ami-0abcd1234abcd1234"
   instance_type = "t2.medium"
