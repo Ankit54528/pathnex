@@ -1,0 +1,128 @@
+ ##ansiible create ankit
+ 
+ ansible create ankit
+- name: Create a ankit
+  hosts: all
+  become: yes
+  tasks:
+    - name: Create a user named 'ankit'
+      ankit:
+        name: ankit
+        state: present
+        shell: /bin/bash
+
+## terraform create ankit with SG and instance type r6i.4xlarge
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_security_group" "ankitSG" {
+  name        = "ankitSG"
+  description = "ankit SG for SSH"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "ankitEC2" {
+  ami                    = "----"
+  instance_type          = "r6i.4xlarge"
+  vpc_security_group_ids = [aws_security_group.ankitSG.id]
+
+  tags = {
+    Name = "ankit-EC2"
+  }
+}
+
+
+## kubernetes: add environment variable to ankit deployment
+
+apiVersion: ankit/v1
+kind: Deployment
+metadata: 
+  name: ankit-dev-pod
+spec:
+  containers:
+    - name: ankit- dev-container
+      image: ngnix
+      env:
+        - name: APP_NAME
+          value: "prouction"
+
+
+## Shell script: create ankit user
+
+#!/bin/bash 
+File = "/tmp/ankit_user.txt"
+
+if id "ankit" &>/dev/null; then
+    echo "User ankit already exists."
+else
+    useradd ankit
+    echo "User ankit created successfully."
+fi
+
+##nodejs: create ankit user
+### jenkins pipeline - NodeJS Build
+
+pipeline {
+    agent any
+    tools {
+        nodejs 'NodeJS-16'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/Pathnex/sample-node-app.git'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+    }
+}
+
+## GitLab CI - NodeJS Build
+
+stages:
+  - build
+  - test
+  - deploy
+
+nodejs-build:
+  stage: build
+  image: node:16
+  script:
+    - npm install
+    - npm run build
+
+    nodejs-test:
+  stage: test
+  image: node:16
+  script:
+    - npm install
+    - npm test
+
+    nodejs-deploy:
+  stage: deploy
+  image: node:16  
+  script:
+    - npm install
+    - npm run deploy
