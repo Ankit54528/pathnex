@@ -1,0 +1,36 @@
+## Jenkins Pipeline - Parameterized Build
+
+pipeline {
+  agent any
+  parameters {
+    string(name: 'ENV', defaultValue: 'dev', description: 'deployment Environment') 
+    }
+    environment {
+    institute_name = 'Pathnex'
+    }
+    stage {'checkout'
+    steps {
+      git url:'----'
+      }
+    }
+    stage ('Deploy') {
+     steps {
+       sh 'echo Deploying to ${ENV} environment'
+       }
+    }
+
+
+    ## GitLab CI
+
+    stages:
+     deploy
+
+     variables:
+      INSTITUTE_NAME: "Pathnex"
+      ENVIRONMENT: "dev"
+
+    deploy:
+      stage: deploy
+      image: alpine:latest
+      script:
+        - echo "Deploying to $ENVIRONMENT by $INSTITUTE_NAME"
