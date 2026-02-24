@@ -1,0 +1,135 @@
+#day8 - variable, VPC, Probes, Loops
+##Ansible - Install Packages using variable
+
+---
+- name: Install packages using variable
+  hosts: all
+  become: yes
+  vars:
+    packages:
+      - tree
+      - unzip
+      - vim
+
+  tasks:
+    - name: Install packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+
+## Terraform - Create VPC + subnet
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "main_vpc"
+  }
+}
+
+resource "aws_subnet" "main_subnet" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  map_public_ip_on_launch =true
+
+  tags = {
+    Name = "ankit-vpc""
+  }
+}
+
+  resource "aws_subnet" "ankit_subnet" {
+  vpc_id           = aws_vpc.main.id
+  cidr_block       = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "ankit-subnet"
+  }
+}
+
+
+## Kubernetes - Probes
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ankit-probe-pod
+  spec: 
+  containers:
+  - name: web
+    image: nginx
+    livenessProbe:
+      httpget:
+      path: /
+      port: 80
+      initialDelaySeconds: 5
+      readinessProbe:
+      httpget:
+        path: /
+        port: 80
+        initialDelaySeconds: 3
+
+## Shell Script - loop through list
+
+#!/bin/bash
+
+  for item in Pathnex DevOps Training; do 
+    echo "item: $item"
+  done
+
+## Jenkins Pipeline - conditional execution
+
+pipeline {
+  agent any
+  parameters {
+    string(name: 'ENV', defaultValue: 'dev', description: 'deployment Environment')
+  }
+  stages {
+    stage('Build') {
+      steps {
+        echo 'Building the application...'
+      }
+    }
+    stage('Test') {
+      steps {
+        echo 'Running tests...'
+      }
+    }
+    stage('Deploy') {
+      when {
+        expression { return params.DEPLOY_TO_PROD }
+      }
+      steps {
+        echo 'Deploying to production environment...'
+      }
+    }
+  }
+}
+
+## GitLab CI - conditional execution
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  image: maven:latest
+  script:
+    - git clone https://github.com/pathnex/ansible-automation.git
+    - cd ansible-automation
+    - mvn clean compile
+    only:
+  - master
+
+  deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying to production environment..."
+  only:
+  - variables:
+    - $DEPLOY_TO_PROD == "true"
